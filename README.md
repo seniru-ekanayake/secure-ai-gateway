@@ -43,3 +43,93 @@ graph TD
     subgraph "External Cloud"
     Cloud
     end
+2. Sequence of Operations
+A step-by-step view of a single request lifecycle.
+
+Code snippet
+sequenceDiagram
+    participant U as User
+    participant G as Gateway (Streamlit)
+    participant P as Privacy Engine
+    participant AI as Groq API
+    
+    U->>G: "Draft email to John Doe regarding Project Apollo"
+    G->>P: Analyze & Anonymize
+    P-->>G: "Draft email to <PERSON> regarding <CUSTOM_JARGON>"
+    Note right of G: Original PII is stored locally in memory map
+    G->>AI: Send Masked Prompt
+    AI-->>G: "Here is a draft for <PERSON> about <CUSTOM_JARGON>..."
+    G->>G: Unmask (Restore "John Doe", "Project Apollo")
+    G-->>U: Final Safe Response
+⚙️ How It Works
+Interception: The user inputs text or uploads a document (PDF/DOCX).
+
+Masking: The Bodyguard (Microsoft Presidio + Custom Regex) scans the text.
+
+Input: "My SSN is 123-45-6789."
+
+Masked: "My SSN is <US_SSN>."
+
+Processing: The masked text is sent to the Groq API (Llama 3.3).
+
+Re-Identification: The AI's response is intercepted, and the placeholders (<US_SSN>) are swapped back to the original values locally.
+
+🚀 How to Test on Your Own
+Follow these steps to run the gateway on your local machine.
+
+Prerequisites
+Python 3.8 or higher.
+
+A free API Key from Groq Console.
+
+Installation
+Clone the repository:
+
+Bash
+git clone [https://github.com/YOUR-USERNAME/secure-ai-gateway.git](https://github.com/YOUR-USERNAME/secure-ai-gateway.git)
+cd secure-ai-gateway
+Install dependencies:
+
+Bash
+pip install streamlit groq presidio-analyzer presidio-anonymizer python-dotenv pypdf python-docx pandas
+python -m spacy download en_core_web_lg
+Configure Security:
+
+Create a file named .env in the main folder.
+
+Add your API key inside:
+
+Code snippet
+GROQ_API_KEY=gsk_your_key_here
+Note: Never share this file!
+
+Run the App:
+
+Bash
+streamlit run gateway.py
+⚠️ Disclaimer & Known Issues
+Current Status: Alpha / Proof of Concept
+
+This tool is a prototype designed to demonstrate Data Loss Prevention (DLP) concepts. It is not yet production-ready.
+
+Bugs: You may encounter issues with specific file formats or edge-case text inputs.
+
+Context Loss: The AI may occasionally struggle with context if too much data is redacted (e.g., gender pronouns might be mismatched).
+
+False Positives: The rigid Regex patterns for SSNs/Credit Cards may sometimes flag non-sensitive numbers.
+
+Use at your own risk. Do not use with critical production data without further testing.
+
+🔮 Future Roadmap
+I am actively developing this tool to include:
+
+[ ] Synthetic Data Replacement: Using Faker to replace placeholders with realistic fake data for better AI context.
+
+[ ] OCR Support: Redacting sensitive text from images and screenshots.
+
+[ ] Chat History: Enabling multi-turn conversations with memory.
+
+[ ] Docker Support: Full containerization for easy deployment.
+
+🤝 Contributing
+Constructive feedback and Pull Requests are welcome! If you find a bug, please open an issue.
