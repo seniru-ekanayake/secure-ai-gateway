@@ -1,0 +1,91 @@
+[
+    {
+        "timestamp": "2026-02-05T00:58:49.094712",
+        "event": "DATA_MASKING",
+        "input_length": 136,
+        "blocked_items": 3,
+        "risk_types": [
+            "EMAIL_ADDRESS",
+            "PHONE_NUMBER",
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'EMAIL_ADDRESS': 1, 'PHONE_NUMBER': 1, 'CUSTOM_JARGON': 1}"
+    },
+    {
+        "timestamp": "2026-02-05T11:24:24.990466",
+        "event": "DATA_MASKING",
+        "input_length": 75,
+        "blocked_items": 3,
+        "risk_types": [
+            "EMAIL_ADDRESS",
+            "PERSON",
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'EMAIL_ADDRESS': 1, 'PERSON': 1, 'CUSTOM_JARGON': 1}"
+    },
+    {
+        "timestamp": "2026-02-10T21:31:35.351360",
+        "event": "DATA_MASKING",
+        "input_length": 125,
+        "blocked_items": 3,
+        "risk_types": [
+            "EMAIL_ADDRESS",
+            "PERSON",
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'EMAIL_ADDRESS': 1, 'PERSON': 1, 'CUSTOM_JARGON': 1}"
+    },
+    {
+        "timestamp": "2026-02-10T21:32:56.281736",
+        "event": "DATA_MASKING",
+        "input_length": 135,
+        "blocked_items": 2,
+        "risk_types": [
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'CUSTOM_JARGON': 2}"
+    },
+    {
+        "timestamp": "2026-02-10T21:34:33.861538",
+        "event": "DATA_MASKING",
+        "input_length": 118,
+        "blocked_items": 2,
+        "risk_types": [
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'CUSTOM_JARGON': 2}"
+    },
+    {
+        "timestamp": "2026-02-10T21:37:14.159295",
+        "event": "DATA_MASKING",
+        "input_length": 118,
+        "blocked_items": 1,
+        "risk_types": [
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'CUSTOM_JARGON': 1}"
+    },
+    {
+        "timestamp": "2026-02-10T21:38:22.176097",
+        "event": "DATA_MASKING",
+        "input_length": 157,
+        "blocked_items": 3,
+        "risk_types": [
+            "EMAIL_ADDRESS",
+            "LOCATION",
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'EMAIL_ADDRESS': 1, 'LOCATION': 1, 'CUSTOM_JARGON': 1}"
+    },
+    {
+        "timestamp": "2026-02-10T21:38:50.972775",
+        "event": "DATA_MASKING",
+        "input_length": 157,
+        "blocked_items": 2,
+        "risk_types": [
+            "EMAIL_ADDRESS",
+            "CUSTOM_JARGON"
+        ],
+        "details": "{'EMAIL_ADDRESS': 1, 'CUSTOM_JARGON': 1}"
+    }
+]
