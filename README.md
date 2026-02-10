@@ -1,28 +1,44 @@
-# 🛡️ Secure GenAI Gateway (Data Loss Prevention)
+# Secure GenAI Gateway
+## Data Loss Prevention for Large Language Models
 
-A privacy-preserving interface that allows secure usage of public Large Language Models (LLMs) by sanitizing sensitive data locally before it leaves the network.
+A privacy-preserving proxy that sanitizes sensitive data locally before sending prompts to public LLMs, enabling secure use of cloud AI services without exposing confidential information.
 
-**Built for:** Security Analysts, SOC Teams, and Privacy-Conscious Developers.
-
-![Security Shield](https://img.shields.io/badge/Security-Data%20Loss%20Prevention-blue) ![Python](https://img.shields.io/badge/Python-3.9%2B-green) ![Status](https://img.shields.io/badge/Status-Prototype-orange)
-
-## 🕵️‍♂️ What It Does
-
-This tool acts as a **"Man-in-the-Middle" security proxy** between the user and the AI provider (Groq/Llama 3). It automatically detects, redacts, and replaces sensitive information (PII/SPII) so that the AI model never sees the real data.
-
-### Key Features
-* **Local Sanitization:** SSNs, Credit Cards, Names, and Emails are masked on your device.
-* **Custom "Jargon" Filters:** Define and block company-specific secret terms (e.g., "Project Apollo").
-* **Audit Logging:** Logs all masking events to a JSON file for compliance (GDPR/NIST) without storing the raw secrets.
-* **Input Validation:** "The Bouncer" module blocks Prompt Injection attacks and DoS attempts.
-* **Secure Architecture:** Decouples the Data Plane (your secrets) from the Intelligence Plane (the AI).
+![Security Shield](https://img.shields.io/badge/Security-Data%20Loss%20Prevention-blue) 
+![Python](https://img.shields.io/badge/Python-3.9%2B-green) 
+![Status](https://img.shields.io/badge/Status-Prototype-orange)
 
 ---
 
-## 🏗️ Technical Architecture
+## Overview
 
-### 1. Data Flow Diagram
-This flowchart illustrates how sensitive data is intercepted and sanitized before reaching the cloud.
+This tool functions as a security gateway between users and public AI providers (Groq/Llama 3). It automatically detects, redacts, and replaces sensitive information before data leaves your network, then re-identifies the content in AI responses—ensuring the LLM never processes actual confidential data.
+
+**Target Users:** Security analysts, SOC teams, compliance officers, and privacy-conscious developers who need to leverage public AI capabilities without violating data protection policies.
+
+## Core Capabilities
+
+**Local Data Sanitization**
+Automatically detects and masks Personal Identifiable Information (PII) and Sensitive Personal Information (SPII) including SSNs, credit cards, names, emails, and phone numbers before transmission.
+
+**Custom Jargon Filtering**
+Supports user-defined term blacklists for organization-specific sensitive information (project codenames, internal terminology, confidential product names).
+
+**Compliance Audit Logging**
+Records all masking operations to a structured JSON audit log for GDPR, HIPAA, and NIST compliance verification—without storing the actual sensitive values.
+
+**Input Validation Layer**
+Implements a "bouncer" module that blocks prompt injection attempts, excessive input lengths, and potential denial-of-service patterns before processing.
+
+**Architectural Decoupling**
+Maintains strict separation between the Data Plane (your sensitive information) and the Intelligence Plane (cloud AI processing).
+
+---
+
+## Architecture
+
+### Data Flow
+
+The system intercepts user input, sanitizes it locally, sends only masked data to the cloud, and restores original values in the response:
 
 ```mermaid
 graph TD
@@ -43,10 +59,11 @@ graph TD
     subgraph "External Cloud"
     Cloud
     end
-2. Sequence of Operations
-A step-by-step view of a single request lifecycle.
+```
 
-Code snippet
+### Request Lifecycle
+
+```mermaid
 sequenceDiagram
     participant U as User
     participant G as Gateway (Streamlit)
@@ -56,80 +73,241 @@ sequenceDiagram
     U->>G: "Draft email to John Doe regarding Project Apollo"
     G->>P: Analyze & Anonymize
     P-->>G: "Draft email to <PERSON> regarding <CUSTOM_JARGON>"
-    Note right of G: Original PII is stored locally in memory map
+    Note right of G: Original PII stored locally in memory map
     G->>AI: Send Masked Prompt
     AI-->>G: "Here is a draft for <PERSON> about <CUSTOM_JARGON>..."
     G->>G: Unmask (Restore "John Doe", "Project Apollo")
     G-->>U: Final Safe Response
-⚙️ How It Works
-Interception: The user inputs text or uploads a document (PDF/DOCX).
+```
 
-Masking: The Bodyguard (Microsoft Presidio + Custom Regex) scans the text.
+## How It Works
 
-Input: "My SSN is 123-45-6789."
+**1. Interception**
+User submits text input or uploads a document (PDF/DOCX) through the Streamlit interface.
 
-Masked: "My SSN is <US_SSN>."
+**2. Analysis & Masking**
+The Privacy Engine (Microsoft Presidio + custom regex patterns) scans the content:
 
-Processing: The masked text is sent to the Groq API (Llama 3.3).
+```
+Input:  "My SSN is 123-45-6789 and email is john@company.com"
+Masked: "My SSN is <US_SSN> and email is <EMAIL_ADDRESS>"
+```
 
-Re-Identification: The AI's response is intercepted, and the placeholders (<US_SSN>) are swapped back to the original values locally.
+**3. Cloud Processing**
+Only the masked text is transmitted to the Groq API (Llama 3.3) for AI processing.
 
-🚀 How to Test on Your Own
-Follow these steps to run the gateway on your local machine.
+**4. Re-Identification**
+The AI response is intercepted and placeholders are replaced with original values using a local mapping table:
 
-Prerequisites
-Python 3.8 or higher.
+```
+AI Response:    "Your <US_SSN> has been verified. We'll contact <EMAIL_ADDRESS>."
+Final Output:   "Your 123-45-6789 has been verified. We'll contact john@company.com."
+```
 
-A free API Key from Groq Console.
+The original sensitive data never leaves the local environment.
 
-Installation
-Clone the repository:
+---
 
-Bash
-git clone [https://github.com/YOUR-USERNAME/secure-ai-gateway.git](https://github.com/YOUR-USERNAME/secure-ai-gateway.git)
+## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Groq API Key (free tier available at [Groq Console](https://console.groq.com))
+
+### Setup Instructions
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/YOUR-USERNAME/secure-ai-gateway.git
 cd secure-ai-gateway
-Install dependencies:
+```
 
-Bash
+**2. Install dependencies**
+
+```bash
 pip install streamlit groq presidio-analyzer presidio-anonymizer python-dotenv pypdf python-docx pandas
 python -m spacy download en_core_web_lg
-Configure Security:
+```
 
-Create a file named .env in the main folder.
+**3. Configure API credentials**
 
-Add your API key inside:
+Create a `.env` file in the project root:
 
-Code snippet
+```env
 GROQ_API_KEY=gsk_your_key_here
-Note: Never share this file!
+```
 
-Run the App:
+**Important:** Add `.env` to your `.gitignore` to prevent credential exposure.
 
-Bash
+**4. Launch the gateway**
+
+```bash
 streamlit run gateway.py
-⚠️ Disclaimer & Known Issues
-Current Status: Alpha / Proof of Concept
+```
 
-This tool is a prototype designed to demonstrate Data Loss Prevention (DLP) concepts. It is not yet production-ready.
+The interface will be accessible at `http://localhost:8501`
 
-Bugs: You may encounter issues with specific file formats or edge-case text inputs.
+---
 
-Context Loss: The AI may occasionally struggle with context if too much data is redacted (e.g., gender pronouns might be mismatched).
+## Usage
 
-False Positives: The rigid Regex patterns for SSNs/Credit Cards may sometimes flag non-sensitive numbers.
+### Basic Text Input
 
-Use at your own risk. Do not use with critical production data without further testing.
+1. Enter or paste text containing sensitive information
+2. The system automatically detects and masks PII
+3. View the sanitized prompt before sending
+4. Receive AI response with original values restored
 
-🔮 Future Roadmap
-I am actively developing this tool to include:
+### Document Processing
 
-[ ] Synthetic Data Replacement: Using Faker to replace placeholders with realistic fake data for better AI context.
+1. Upload PDF or DOCX files via the interface
+2. Text is extracted and analyzed automatically
+3. Sensitive content is redacted before AI processing
+4. Download the AI-generated response with proper re-identification
 
-[ ] OCR Support: Redacting sensitive text from images and screenshots.
+### Custom Jargon Configuration
 
-[ ] Chat History: Enabling multi-turn conversations with memory.
+Add organization-specific sensitive terms to the custom filter:
 
-[ ] Docker Support: Full containerization for easy deployment.
+```python
+# In gateway.py, modify the CUSTOM_JARGON list:
+CUSTOM_JARGON = [
+    "Project Apollo",
+    "Operation Nightfall",
+    "Client Codename Alpha"
+]
+```
 
-🤝 Contributing
-Constructive feedback and Pull Requests are welcome! If you find a bug, please open an issue.
+---
+
+## Configuration
+
+### Supported PII Types
+
+The system currently detects:
+- Social Security Numbers (US_SSN)
+- Credit Card Numbers (CREDIT_CARD)
+- Email Addresses (EMAIL_ADDRESS)
+- Person Names (PERSON)
+- Phone Numbers (PHONE_NUMBER)
+- IP Addresses (IP_ADDRESS)
+- URLs (URL)
+
+Modify detection patterns in the Privacy Engine configuration.
+
+### Audit Log Format
+
+Masking events are logged to `audit_log.json`:
+
+```json
+{
+  "timestamp": "2024-02-10T14:23:45",
+  "entity_type": "US_SSN",
+  "action": "masked",
+  "placeholder": "<US_SSN>",
+  "user_session": "abc123"
+}
+```
+
+Note: Original values are never written to logs.
+
+---
+
+## Known Limitations
+
+**Prototype Status**
+This is an alpha proof-of-concept demonstrating DLP principles. It requires additional hardening before production deployment.
+
+**Context Preservation Issues**
+Heavy redaction (e.g., multiple consecutive names) may reduce AI response quality due to lost context. Gender pronouns and relational references may be inconsistent.
+
+**False Positive Detections**
+Rigid regex patterns occasionally flag non-sensitive numeric sequences (e.g., reference numbers, dates) as SSNs or credit cards.
+
+**File Format Support**
+Currently limited to PDF and DOCX. Other formats (XLSX, images, presentations) are not supported.
+
+**Single-Turn Conversations**
+No conversation history is maintained between requests. Each query is treated independently.
+
+---
+
+## Development Roadmap
+
+### Planned Features
+
+- [ ] **Synthetic Data Replacement**: Use Faker library to replace placeholders with realistic dummy data, improving AI context understanding
+- [ ] **OCR Integration**: Extract and redact sensitive text from images and screenshots
+- [ ] **Conversation Memory**: Support multi-turn dialogues with persistent context
+- [ ] **Additional LLM Support**: Extend beyond Groq to OpenAI, Anthropic, Azure OpenAI
+- [ ] **Docker Deployment**: Containerized setup for simplified deployment
+- [ ] **Role-Based Access Control**: Multi-user support with different sensitivity thresholds
+- [ ] **Advanced Analytics**: Dashboard for monitoring redaction patterns and compliance metrics
+
+### Potential Enhancements
+
+- Real-time streaming responses with progressive re-identification
+- Integration with enterprise SIEM systems
+- Custom entity recognition model training
+- Webhook support for automated workflows
+- API endpoint for programmatic access
+
+---
+
+## Security Considerations
+
+**Data Handling**
+- Sensitive data is held in memory only during active sessions
+- No persistent storage of unmasked PII
+- API credentials are loaded from environment variables, never hardcoded
+
+**Network Security**
+- All external API calls use HTTPS
+- Consider deploying behind a corporate firewall for additional protection
+
+**Compliance**
+- Audit logs support GDPR Article 30 record-keeping requirements
+- HIPAA compliance requires additional access controls and encryption at rest
+
+---
+
+## Contributing
+
+Contributions are welcome. Please follow these guidelines:
+
+1. **Report Issues**: Use GitHub Issues for bug reports and feature requests
+2. **Code Standards**: Follow PEP 8 style guidelines
+3. **Testing**: Include test cases for new detection patterns or features
+4. **Documentation**: Update README for any user-facing changes
+5. **Pull Requests**: Create feature branches and submit PRs with clear descriptions
+
+Areas particularly valuable for contribution:
+- Additional PII detection patterns (international formats)
+- Performance optimization for large document processing
+- Enhanced error handling and user feedback
+- Security audit and penetration testing
+
+---
+
+## Disclaimer
+
+This tool is provided as-is for educational and demonstration purposes. It is not certified for use with regulated data (PHI, PCI-DSS, classified information) without proper security assessment.
+
+**Use Responsibly:**
+- Test thoroughly with non-sensitive data before production use
+- Conduct security reviews appropriate to your risk profile
+- Understand that no automated system is 100% accurate
+- Maintain human oversight for critical data processing
+
+---
+
+## License
+
+MIT License - see LICENSE file for details
+
+---
+
+**Secure GenAI Gateway**  
+*Enabling safe AI adoption through privacy-preserving architecture*
