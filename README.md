@@ -42,7 +42,7 @@ The system intercepts user input, sanitizes it locally, sends only masked data t
 
 ```mermaid
 graph TD
-    User[👤 User Input] -->|Raw Text| Bouncer[Input Validation]
+    User[User Input] -->|Raw Text| Bouncer[Input Validation]
     Bouncer -->|Valid Text| Bodyguard[Presidio Analyzer]
     Bodyguard -->|Detects PII| Anonymizer[Anonymizer Engine]
     Anonymizer -->|Masked Text e.g. <PERSON>| Cloud[Groq API / Llama 3]
@@ -306,8 +306,3 @@ This tool is provided as-is for educational and demonstration purposes. It is no
 ## License
 
 MIT License - see LICENSE file for details
-
----
-
-**Secure GenAI Gateway**  
-*Enabling safe AI adoption through privacy-preserving architecture*
